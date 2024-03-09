@@ -7,12 +7,6 @@ from youtube_trending_text.tokenizer_korean import TokenizerComparison
 from youtube_trending_text.extract_data import load_latest_csv_data, select_columns_list, \
     remove_from_default_columns_list
 
-latest_data = load_latest_csv_data()
-removed_columns = [
-    'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt', 'channelTitle', 'tags', 'description'
-]
-selected_data = select_columns_list(latest_data, remove_from_default_columns_list(removed_columns))
-
 
 def tokenize_sentencepiece(text):
     if isinstance(text, str):
@@ -31,24 +25,53 @@ def tokenize_konlpy_mecab(text):
 
 
 def parallelize_dataframe(df, func, n_cores=multiprocessing.cpu_count()):
-    df_split = np.array_split(df, n_cores)  # core의 개수만큼 df를 나눔
-    pool = Pool(n_cores)  # pool을 core개수만큼 생성
-    df = pd.concat(pool.map(func, df_split))  # 나누어진 df를 func을 적용해서 수행 및 concat
+    df_split = np.array_split(df, n_cores)
+    pool = Pool(n_cores)
+    df = pd.concat(pool.map(func, df_split))
     pool.close()
-    pool.join()  # 모두 완료될 때까지 대기
+    pool.join()
     return df
 
 
 def run_tokenizer(df):
-    df['sentencepiece_title'] = df['title'].apply(lambda x: tokenize_sentencepiece(x))
     df['konlpy_mecab_title'] = df['title'].apply(lambda x: tokenize_konlpy_mecab(x))
+    df['sentencepiece_title'] = df['title'].apply(lambda x: tokenize_sentencepiece(x))
     return df
 
 
 if __name__ == '__main__':
+    # 27595 rows of 252846 rows (removed duplication items)
+    latest_data = load_latest_csv_data(duplicates=False)
+    removed_columns = [
+        'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt', 'channelTitle', 'tags', 'description'
+    ]
+    selected_data = select_columns_list(latest_data, remove_from_default_columns_list(removed_columns))
+    print(selected_data.count())
+
+    import re
+
+    # emoji pattern
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               "]+", flags=re.UNICODE)
+
+    selected_data = selected_data.copy()
+    selected_data.loc[selected_data['title'].apply(isinstance, args=(str,)), 'title'] = selected_data[
+        'title'].apply(lambda x: emoji_pattern.sub(r'', x) if isinstance(x, str) else x)
+
+    # hangul pattern
+    korean_pattern = re.compile('[가-힣]')
+    selected_data = selected_data[
+        selected_data['title'].apply(lambda x: bool(korean_pattern.search(x)) if isinstance(x, str) else False)]
+
+    # Remove rows with title length less than 99 characters
+    # for benchmarking purposes
+    # selected_data = selected_data[(selected_data['title'].str.len() > 99)].reset_index(drop=True)
+
     print(selected_data.count())
     start = time.time()
-    parallelize_dataframe(selected_data, run_tokenizer)
-    selected_data.to_json(r'tokenized_title.json')
+    result = parallelize_dataframe(selected_data, run_tokenizer)
     end = time.time()
-    logger.info(f"Total Tokenization Time: {end - start} seconds.")
+    result.to_json('./tokenized_title.json', orient='records', lines=True, force_ascii=False)
+    print(f"Total Tokenization Time: {end - start} seconds.")
