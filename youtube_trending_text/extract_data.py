@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pandas as pd
@@ -9,6 +10,7 @@ DEFAULT_SELECTED_COLUMNS = [
 
 
 def __read_csv(file_path):
+    subprocess.run(['git', 'lfs', 'checkout', file_path], check=True, stdout=subprocess.DEVNULL)
     return pd.read_csv(file_path)
 
 
