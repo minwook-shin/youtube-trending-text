@@ -11,7 +11,7 @@ DEFAULT_SELECTED_COLUMNS = [
 
 def __read_csv(file_path):
     subprocess.run(['git', 'lfs', 'checkout', file_path], check=True, stdout=subprocess.DEVNULL)
-    return pd.read_csv(file_path)
+    return pd.read_csv(file_path, encoding='utf-8', encoding_errors='replace')
 
 
 def load_latest_csv_data(data_folder_path="data"):
