@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 DEFAULT_SELECTED_COLUMNS = [
-    'title', 'channelTitle', 'tags', 'description', 'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt'
+    'video_id', 'title', 'description', 'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt'
 ]
 
 
@@ -14,13 +14,16 @@ def __read_csv(file_path):
     return pd.read_csv(file_path, encoding='utf-8', encoding_errors='replace')
 
 
-def load_latest_csv_data(data_folder_path="data"):
+def load_latest_csv_data(data_folder_path="data", duplicates=False):
     root = Path(os.path.dirname(os.path.abspath(__file__))).parent.joinpath(data_folder_path)
     csv_file = [file for file in os.listdir(root) if file.startswith("KR") and file.endswith(".csv")]
     latest_csv_file = sorted(csv_file,
                              key=lambda x: pd.to_datetime(x.split('_')[-1].replace(".csv", ""), format="%Y.%m.%d"),
                              reverse=True)
-    return __read_csv(root.joinpath(latest_csv_file[0]))
+    df = __read_csv(root.joinpath(latest_csv_file[0]))
+    if not duplicates:
+        df = df.drop_duplicates(['video_id'])
+    return df
 
 
 def select_columns_list(data, columns_list=None):
