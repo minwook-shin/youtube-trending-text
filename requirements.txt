@@ -1,2 +1,9 @@
 kaggle
 pandas
+sentencepiece
+transformers
+konlpy
+mecab-python3
+tensorflow-macos
+tensorflow-metal
+urllib3 < 2.0
