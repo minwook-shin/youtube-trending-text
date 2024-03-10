@@ -34,8 +34,8 @@ def parallelize_dataframe(df, func, n_cores=multiprocessing.cpu_count()):
 
 
 def run_tokenizer(df):
-    df['konlpy_mecab_title'] = df['title'].apply(lambda x: tokenize_konlpy_mecab(x))
-    df['sentencepiece_title'] = df['title'].apply(lambda x: tokenize_sentencepiece(x))
+    df['konlpy_mecab_title'] = df.index.map(tokenize_konlpy_mecab)
+    df['sentencepiece_title'] = df.index.map(tokenize_sentencepiece)
     return df
 
 
@@ -69,9 +69,14 @@ if __name__ == '__main__':
     # for benchmarking purposes
     # selected_data = selected_data[(selected_data['title'].str.len() > 99)].reset_index(drop=True)
 
+    # title indexing
+    selected_data.set_index('title', inplace=True, drop=True)
+    selected_data = selected_data.drop('video_id', axis=1)
+    selected_data = selected_data.drop_duplicates(['title'])
+
     print(selected_data.count())
     start = time.time()
     result = parallelize_dataframe(selected_data, run_tokenizer)
     end = time.time()
-    result.to_json('./tokenized_title.json', orient='records', lines=True, force_ascii=False)
+    result.to_csv('./tokenized_title.csv', encoding='utf-8', index=True, header=True)
     print(f"Total Tokenization Time: {end - start} seconds.")
