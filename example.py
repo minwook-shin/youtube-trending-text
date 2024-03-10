@@ -65,6 +65,11 @@ if __name__ == '__main__':
     selected_data = selected_data[
         selected_data['title'].apply(lambda x: bool(korean_pattern.search(x)) if isinstance(x, str) else False)]
 
+    # Special characters and symbols pattern
+    special_chars_inequality_symbols_pattern = re.compile('[-<>!@#$%^&*(),.?":{}|/]')
+    selected_data['title'] = selected_data['title'].apply(
+        lambda x: special_chars_inequality_symbols_pattern.sub(' ', x) if isinstance(x, str) else x)
+
     # Remove rows with title length less than 99 characters
     # for benchmarking purposes
     # selected_data = selected_data[(selected_data['title'].str.len() > 99)].reset_index(drop=True)
