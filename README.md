@@ -104,6 +104,14 @@ POST youtube_trending_kr/_search
 }
 ```
 
+### search score
+
+The field_value_factor in Elasticsearch is used to adjust the score of a document based on the value of a specific field. 
+
+This is useful when the value of a certain field influences the relevance of a document.
+
+* field: The name of the field to use for score adjustment.
+* factor: An optional factor to multiply the field value with.
 
 ## References
 
