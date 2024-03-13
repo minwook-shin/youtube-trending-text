@@ -2,15 +2,11 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 # from sentence_transformers import SentenceTransformer
 
-from youtube_trending_text.extract_data import load_latest_csv_data, select_columns_list, \
-    remove_from_default_columns_list
+from youtube_trending_text.extract_data import load_latest_csv_data
 
 # 27595 rows of 252846 rows (removed duplication items)
 df = load_latest_csv_data(duplicates=False)
-removed_columns = [
-    'description'
-]
-df = select_columns_list(df, remove_from_default_columns_list(removed_columns))
+df = df.fillna('')
 # model = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
 # df['vector'] = df['title'].apply(lambda x: model.encode(x).tolist())
 
@@ -41,6 +37,10 @@ index_settings = {
     "mappings": {
         "properties": {
             "title": {
+                "type": "text",
+                "analyzer": "nori_analyzer"
+            },
+            "description": {
                 "type": "text",
                 "analyzer": "nori_analyzer"
             },
