@@ -14,7 +14,7 @@ Extract Text information from popular Korean YouTube videos and visualize popula
         - https://github.com/seujung/kolang-t5-base
     - KoNLPy mecab morpheme analyzer
     - KoNLPy KOMORAN morpheme analyzer
-- (TODO) Data visualization
+- Data visualization
   - Visualize data based on the results of data analysis
   - Derive insights based on the results of data visualization
 
@@ -73,6 +73,37 @@ KoNLPy Mecab Tokenization Time: 0.01869821548461914 seconds
 KoNLPy KOMORAN Tokenization Time: 0.012591123580932617 seconds
 ['아버지', '가방', '에', '들어가', '시', 'ㄴ다', '.']
 ```
+
+## Search engine
+
+Elasitcsearch + Kiabana
+
+- https://www.elastic.co/kr/elasticsearch/
+- https://www.elastic.co/kr/kibana
+- nori tokenizer
+  - https://www.elastic.co/kr/guide/en/elasticsearch/plugins/current/analysis-nori-tokenizer.html
+
+### nori tokenizer test
+
+```bash
+post _analyze
+{
+  "analyzer": "nori",
+  "text": "아버지가방에들어가신다."
+}
+```
+
+### Search keyword after bulk_data_example.py
+
+```bash
+POST youtube_trending_kr/_search
+{
+  "query": {
+    "match": {"title": "속보"}
+  }
+}
+```
+
 
 ## References
 

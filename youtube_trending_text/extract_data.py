@@ -5,7 +5,8 @@ import pandas as pd
 import os
 
 DEFAULT_SELECTED_COLUMNS = [
-    'video_id', 'title', 'description', 'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt'
+    'video_id', 'title', 'description', 'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt',
+    'thumbnail_link'
 ]
 
 

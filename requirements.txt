@@ -1,9 +1,9 @@
 kaggle
-pandas
-sentencepiece
-transformers
-konlpy
-mecab-python3
-tensorflow-macos
-tensorflow-metal
+pandas==2.2.1
+sentencepiece==0.2.0
+transformers==4.38.2
+konlpy==0.6.0
+mecab-python3==1.0.8
+elasticsearch==8.12.1
 urllib3 < 2.0
+# sentence-transformers==2.5.1
