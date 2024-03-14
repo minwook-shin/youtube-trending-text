@@ -10,32 +10,54 @@ function highlight(text, query) {
 function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [showDetails, setShowDetails] = useState({});
+
+  const toggleDetails = (id) => {
+    setShowDetails(prevState => ({ ...prevState, [id]: !prevState[id] }));
+  };
 
   const search = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:9200/_search?size=10', {
         params: {
           source: JSON.stringify({
+            "explain": true,
             "query": {
               "function_score": {
                 "query": { "match": { "title": query } },
-                "functions": [{
-                  "field_value_factor": {
-                    "field": "view_count",
-                    "modifier": "log1p",
-                    "factor": 1.3
-                  },// eslint-disable-next-line
-                  "field_value_factor": {
-                    "field": "likes",
-                    "modifier": "log1p",
-                    "factor": 1.2
-                  },// eslint-disable-next-line
-                  "field_value_factor": {
-                    "field": "comment_count",
-                    "modifier": "log1p",
-                    "factor": 1.1
+                "functions": [
+                  {
+                    "field_value_factor": {
+                      "field": "view_count",
+                      "modifier": "log1p",
+                      "factor": 1.3
+                    }
+                  },
+                  {
+                    "field_value_factor": {
+                      "field": "likes",
+                      "modifier": "log1p",
+                      "factor": 1.2
+                    }
+                  },
+                  {
+                    "field_value_factor": {
+                      "field": "comment_count",
+                      "modifier": "log1p",
+                      "factor": 1.1
+                    }
+                  },
+                  {
+                    "gauss": {
+                      "publishedAt": {
+                        "origin": new Date().toISOString(),
+                        "scale": "360d",
+                        "offset": "30d",
+                        "decay": 0.5
+                      }
+                    }
                   }
-                }],
+                ],
                 "boost_mode": "multiply"
               }
             }
@@ -44,6 +66,7 @@ function App() {
         }
       });
       setResults(response.data.hits.hits);
+      console.log(response.data.hits.hits);
     } catch (error) {
       console.error("Error during search:", error);
     }
@@ -101,7 +124,14 @@ function App() {
                 <img src={result._source.thumbnail_link} alt={result._source.title} />
               </a>
               <p style={{ fontSize: '14px' }}>{"match score : " + result._score}</p>
-              <p style={{ fontSize: '12px' }}>{"view count : " + result._source.view_count}</p>
+              <button onClick={() => toggleDetails(result._id)}>
+                {showDetails[result._id] ? 'Close' : 'Search Explain'}
+              </button>
+              {showDetails[result._id] && (
+                <pre>
+                  {"score explain : " + JSON.stringify(result._explanation, null, 2)}
+                </pre>
+              )}              <p style={{ fontSize: '12px' }}>{"view count : " + result._source.view_count}</p>
               <p style={{ fontSize: '12px' }}>{"likes : " + result._source.likes}</p>
               <p style={{ fontSize: '12px' }}>{"comment count : " + result._source.comment_count}</p>
               <p style={{ fontSize: '12px' }}>{"published At : " + result._source.publishedAt}</p>
