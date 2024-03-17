@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './App.css';
+import { CssBaseline, Container, Typography, Button, TextField } from '@mui/material';
+import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+
+
 
 function highlight(text, query) {
   const regex = new RegExp(`(${query})`, 'gi');
@@ -74,71 +80,58 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>유튜브 한국 인기 동영상 검색 키워드 TOP 10</h1>
-        <input
-          placeholder='Search for videos...'
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              search();
-            }
-          }}
-          className="search-bar"
-          style={{
-            width: '60%',
-            padding: '12px 20px',
-            margin: '8px 0',
-            boxSizing: 'border-box',
-            borderRadius: '4px',
-            border: '2px solid #ccc',
-            transition: '0.5s',
-            outline: 'none',
-          }}
-        />
-        <button onClick={search} style={{
-          padding: '10px 20px',
-          margin: '8px 0',
-          boxSizing: 'border-box',
-          borderRadius: '4px',
-          border: 'none',
-          color: 'white',
-          cursor: 'pointer',
-          transition: '0.5s',
-          outline: 'none'
-        }}>Search</button>
-        <ol>
-          {results.map(result => (
-            <li key={result._id}>
-              <h2
-                onClick={() => {
-                  if (window.confirm('제목을 클립보드에 복사하시겠습니까?')) {
-                    navigator.clipboard.writeText(result._source.title);
-                  }
-                }}
-                dangerouslySetInnerHTML={{ __html: highlight(result._source.title, query) }}
-              />
-              <a href={`https://www.youtube.com/watch?v=${result._source.video_id}`} target="_blank" rel="noopener noreferrer">
-                <img src={result._source.thumbnail_link} alt={result._source.title} />
-              </a>
-              <p style={{ fontSize: '14px' }}>{"match score : " + result._score}</p>
-              <button onClick={() => toggleDetails(result._id)}>
-                {showDetails[result._id] ? 'Close' : 'Search Explain'}
-              </button>
-              {showDetails[result._id] && (
-                <pre>
-                  {"score explain : " + JSON.stringify(result._explanation, null, 2)}
-                </pre>
-              )}              <p style={{ fontSize: '12px' }}>{"view count : " + result._source.view_count}</p>
-              <p style={{ fontSize: '12px' }}>{"likes : " + result._source.likes}</p>
-              <p style={{ fontSize: '12px' }}>{"comment count : " + result._source.comment_count}</p>
-              <p style={{ fontSize: '12px' }}>{"published At : " + result._source.publishedAt}</p>
-            </li>
-          ))}
-        </ol>
-      </header>
+      <CssBaseline />
+      <Container>
+        <Grid container spacing={2}>
+          <Grid fullWidth xs={12}>
+            <Typography component="h1" variant="h4">유튜브 한국 인기 동영상 검색 키워드 TOP 10</Typography>
+            <TextField fullWidth id="standard-basic" label="Search for videos..." variant="standard" onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  search();
+                }
+              }} />
+            <Button fullWidth variant="outlined" onClick={search}>Search</Button>
+          </Grid>
+          <Grid fullWidth xs={12}>
+            {results.map(result => (
+              <Card sx={{ display: 'flex' }} key={result._id}>
+                <a href={`https://www.youtube.com/watch?v=${result._source.video_id}`} target="_blank" rel="noopener noreferrer">
+                  <CardMedia
+                    component="img"
+                    image={result._source.thumbnail_link}
+                    alt="green iguana"
+                  />
+                </a>
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="div" onClick={() => {
+                    if (window.confirm('제목을 클립보드에 복사하시겠습니까?')) {
+                      navigator.clipboard.writeText(result._source.title);
+                    }
+                  }}
+                    dangerouslySetInnerHTML={{ __html: highlight(result._source.title, query) }}>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {"match score : " + result._score}
+                    <button onClick={() => toggleDetails(result._id)}>
+                      {showDetails[result._id] ? 'Close' : 'Search Explain'}
+                    </button>
+                    {showDetails[result._id] && (
+                      <pre style={{ fontSize: '10px' }}>
+                        {"score explain : " + JSON.stringify(result._explanation, null, 2)}
+                      </pre>
+                    )} <br />
+                    {"view count : " + result._source.view_count} <br />
+                    {"likes : " + result._source.likes} <br />
+                    {"comment count : " + result._source.comment_count} <br />
+                    {"published At : " + result._source.publishedAt}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Grid>
+        </Grid>
+      </Container>
     </div>
   );
 }
