@@ -5,6 +5,7 @@ import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
+import Switch from '@mui/material/Switch';
 
 
 
@@ -17,65 +18,76 @@ function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [showDetails, setShowDetails] = useState({});
+  const [isBoostingEnabled, setIsBoostingEnabled] = useState(false);
+
+  const handleToggle = () => {
+    setIsBoostingEnabled(!isBoostingEnabled);
+  };
+
 
   const toggleDetails = (id) => {
     setShowDetails(prevState => ({ ...prevState, [id]: !prevState[id] }));
   };
 
   const search = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:9200/_search?size=10', {
-        params: {
-          source: JSON.stringify({
-            "explain": true,
-            "query": {
-              "function_score": {
-                "query": { "match": { "title": query } },
-                "functions": [
-                  {
-                    "field_value_factor": {
-                      "field": "view_count",
-                      "modifier": "log1p",
-                      "factor": 1.3
-                    }
-                  },
-                  {
-                    "field_value_factor": {
-                      "field": "likes",
-                      "modifier": "log1p",
-                      "factor": 1.2
-                    }
-                  },
-                  {
-                    "field_value_factor": {
-                      "field": "comment_count",
-                      "modifier": "log1p",
-                      "factor": 1.1
-                    }
-                  },
-                  {
-                    "gauss": {
-                      "publishedAt": {
-                        "origin": new Date().toISOString(),
-                        "scale": "360d",
-                        "offset": "30d",
-                        "decay": 0.5
-                      }
-                    }
-                  }
-                ],
-                "boost_mode": "multiply"
+    const search_query = isBoostingEnabled ? {
+      "function_score": {
+        "query": {
+          "multi_match": {
+            "query": query,
+            "fields": ["title", "description"]
+          }
+        },
+        "functions": [
+          {
+            "field_value_factor": {
+              "field": "view_count",
+              "modifier": "log1p",
+              "factor": 1.3
+            }
+          },
+          {
+            "field_value_factor": {
+              "field": "likes",
+              "modifier": "log1p",
+              "factor": 1.2
+            }
+          },
+          {
+            "field_value_factor": {
+              "field": "comment_count",
+              "modifier": "log1p",
+              "factor": 1.1
+            }
+          },
+          {
+            "gauss": {
+              "publishedAt": {
+                "origin": new Date().toISOString(),
+                "scale": "360d",
+                "offset": "30d",
+                "decay": 0.5
               }
             }
-          }),
-          source_content_type: 'application/json'
-        }
-      });
-      setResults(response.data.hits.hits);
-      console.log(response.data.hits.hits);
-    } catch (error) {
-      console.error("Error during search:", error);
-    }
+          }
+        ],
+        "boost_mode": "multiply"
+      }
+    } : {
+      "multi_match": {
+        "query": query,
+        "fields": ["title", "description"]
+      }
+    };
+
+    const response = await axios.get('http://127.0.0.1:9200/_search?size=10', {
+      params: {
+        source: JSON.stringify({ "explain": true, "query": search_query }),
+        source_content_type: 'application/json'
+      }
+    });
+    setResults(response.data.hits.hits);
+
   };
 
   return (
@@ -85,6 +97,7 @@ function App() {
         <Grid container spacing={2}>
           <Grid fullWidth xs={12}>
             <Typography component="h1" variant="h4">유튜브 한국 인기 동영상 검색 키워드 TOP 10</Typography>
+            부스팅 : <Switch defaultChecked checked={isBoostingEnabled} onChange={handleToggle} />
             <TextField fullWidth id="standard-basic" label="Search for videos..." variant="standard" onChange={e => setQuery(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
