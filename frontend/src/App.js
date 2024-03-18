@@ -137,7 +137,8 @@ function App() {
                     {"view count : " + result._source.view_count} <br />
                     {"likes : " + result._source.likes} <br />
                     {"comment count : " + result._source.comment_count} <br />
-                    {"published At : " + result._source.publishedAt}
+                    {"published At : " + result._source.publishedAt} <br />
+                    {"인기 동영상 등록이 " + result._source.video_count + "회 진행된 영상입니다."}
                   </Typography>
                 </CardContent>
               </Card>

@@ -6,7 +6,7 @@ import os
 
 DEFAULT_SELECTED_COLUMNS = [
     'video_id', 'title', 'description', 'view_count', 'likes', 'dislikes', 'comment_count', 'publishedAt',
-    'thumbnail_link'
+    'thumbnail_link', 'video_count'
 ]
 
 
@@ -22,6 +22,7 @@ def load_latest_csv_data(data_folder_path="data", duplicates=False):
                              key=lambda x: pd.to_datetime(x.split('_')[-1].replace(".csv", ""), format="%Y.%m.%d"),
                              reverse=True)
     df = __read_csv(root.joinpath(latest_csv_file[0]))
+    df['video_count'] = df.groupby('video_id')['video_id'].transform('count')
     if not duplicates:
         df = df.drop_duplicates(['video_id'])
     return df

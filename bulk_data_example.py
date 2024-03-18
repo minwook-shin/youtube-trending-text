@@ -26,47 +26,17 @@ index_settings = {
                 "nori_analyzer": {
                     "type": "custom",
                     "tokenizer": "korean_nori_tokenizer",
-                    "filter": ["norwegian_stemmer", "nori_posfilter", "nori_readingform"]
+                    "filter": ["nori_posfilter", "nori_readingform"]
                 }
             },
             "filter": {
-                "norwegian_stemmer": {
-                    "type": "stemmer",
-                    "name": "norwegian"
-                },
                 "nori_posfilter": {
                     "type": "nori_part_of_speech",
                     "stoptags": [
-                        "E",
-                        "IC",
-                        "J",
-                        "MAG",
-                        "MM",
-                        "NA",
-                        "NR",
-                        "SC",
-                        "SE",
-                        "SF",
-                        "SH",
-                        "SL",
-                        "SN",
-                        "SP",
-                        "SSC",
-                        "SSO",
-                        "SY",
-                        "UNA",
-                        "UNKNOWN",
-                        "VA",
-                        "VCN",
-                        "VCP",
-                        "VSV",
-                        "VV",
-                        "VX",
-                        "XPN",
-                        "XR",
-                        "XSA",
-                        "XSN",
-                        "XSV"
+                        "E", "IC", "J", "MAG", "MAJ",
+                        "MM", "SP", "SSC", "SSO", "SC",
+                        "SE", "XPN", "XSA", "XSN", "XSV",
+                        "UNA", "NA", "VSV"
                     ]
                 },
             }
