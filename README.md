@@ -113,6 +113,14 @@ This is useful when the value of a certain field influences the relevance of a d
 * field: The name of the field to use for score adjustment.
 * factor: An optional factor to multiply the field value with.
 
+
+### huggingface dataset
+
+huggingface provides a dataset of Korean trending YouTube titles and descriptions.
+Alternatively, you can use the datasets in the data folder.
+
+https://huggingface.co/minwook-shin/youtube_trending_korean_title_description
+
 ## References
 
 - 딥 러닝을 이용한 자연어 처리 입문

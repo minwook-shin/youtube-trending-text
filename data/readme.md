@@ -27,6 +27,12 @@ and unzip the downloaded file.
 unzip data/KR_youtube_trending_data.csv.zip -d data
 ```
 
+## tokenization
+
+- koNLPy mecab
+- title, description
+- description tokenization time : 6609.0457 seconds (AMD 7600 + SSD)
+
 ## License
 
 CC0: Public Domain
