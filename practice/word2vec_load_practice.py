@@ -1,5 +1,6 @@
+import numpy as np
 from gensim.models import Word2Vec
-
+from konlpy.tag import Mecab
 
 model = Word2Vec.load("youtube_trending_kr_title_description_2024.03.06.model")
 print(model.wv.get_vector(u'배우'))
@@ -9,3 +10,21 @@ print(model.wv.similarity(u'배우', u'남자'))
 print(model.wv.similarity(u'남자', u'여배우'))
 print(model.wv.most_similar(positive=[u'남자'], topn=5))
 print(model.wv.most_similar(positive=[u'남자', u'여배우'], negative=[u'배우'], topn=5))
+
+print(model.wv.n_similarity("안녕하세요", "안녕하십니까"))
+print(model.wv.n_similarity("이 영화는 지루해요.", "이 영화는 정말 재미없어요."))
+
+tokenizer = Mecab()
+
+sentence = "날씨가 좋아요."
+tokens = tokenizer.morphs(sentence)
+word_vectors = []
+for word in tokens:
+    if word in model.wv.key_to_index:
+        word_vector = model.wv[word]
+        word_vectors.append(word_vector)
+sentence_vector = np.mean(word_vectors, axis=0)
+print(sentence_vector)
+
+similar_sentences = model.wv.most_similar(positive=tokens, topn=5)
+print(similar_sentences)
