@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Switch from '@mui/material/Switch';
-
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 
 function highlight(text, query) {
@@ -20,10 +20,29 @@ function App() {
   const [showDetails, setShowDetails] = useState({});
   const [isBoostingEnabled, setIsBoostingEnabled] = useState(false);
 
+  const [apiResult, setApiResult] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const handleToggle = () => {
     setIsBoostingEnabled(!isBoostingEnabled);
   };
 
+  const search_similar = async (video_id) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`http://localhost:5000/${video_id}`);
+      if (response.data.length === 0) {
+        setError('결과가 없습니다.');
+      } else {
+        setApiResult(response.data);
+      }
+    } catch (error) {
+      setError('API 호출 중 오류가 발생했거나, 없는 단어입니다.');
+    }
+    setIsLoading(false);
+  };
 
   const toggleDetails = (id) => {
     setShowDetails(prevState => ({ ...prevState, [id]: !prevState[id] }));
@@ -87,7 +106,7 @@ function App() {
       }
     });
     setResults(response.data.hits.hits);
-
+    search_similar(query);
   };
 
   return (
@@ -105,6 +124,30 @@ function App() {
                 }
               }} />
             <Button fullWidth variant="outlined" onClick={search}>Search</Button>
+            {isLoading ? (
+              <p>유사 단어를 추출하고 있습니다...</p>
+            ) : error ? (
+              <p>{error}</p>
+            ) : (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Rank</TableCell>
+                      <TableCell>Similar Keyword</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {apiResult.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{index}</TableCell>
+                        <TableCell>{item}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </Grid>
           <Grid fullWidth xs={12}>
             {results.map(result => (
