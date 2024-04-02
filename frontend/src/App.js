@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Switch from '@mui/material/Switch';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Slider } from '@mui/material';
 
 
 function highlight(text, query) {
@@ -23,6 +23,14 @@ function App() {
   const [apiResult, setApiResult] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [viewCountFactor, setViewCountFactor] = useState(1.3);
+  const [likesFactor, setLikesFactor] = useState(1.2);
+  const [commentCountFactor, setCommentCountFactor] = useState(1.1);
+
+  const [gaussScale, setGaussScale] = useState(360);
+  const [gaussOffset, setGaussOffset] = useState(30);
+  const [gaussDecay, setGaussDecay] = useState(0.5);
 
   const handleToggle = () => {
     setIsBoostingEnabled(!isBoostingEnabled);
@@ -62,30 +70,30 @@ function App() {
             "field_value_factor": {
               "field": "view_count",
               "modifier": "log1p",
-              "factor": 1.3
+              "factor": viewCountFactor
             }
           },
           {
             "field_value_factor": {
               "field": "likes",
               "modifier": "log1p",
-              "factor": 1.2
+              "factor": likesFactor
             }
           },
           {
             "field_value_factor": {
               "field": "comment_count",
               "modifier": "log1p",
-              "factor": 1.1
+              "factor": commentCountFactor
             }
           },
           {
             "gauss": {
               "publishedAt": {
                 "origin": new Date().toISOString(),
-                "scale": "360d",
-                "offset": "30d",
-                "decay": 0.5
+                "scale": gaussScale + "d",
+                "offset": gaussOffset + "d",
+                "decay": gaussDecay
               }
             }
           }
@@ -123,6 +131,18 @@ function App() {
                   search();
                 }
               }} />
+              <Typography gutterBottom>View Count Factor</Typography>
+            <Slider value={viewCountFactor} min={0.01} max={2} step={0.01} onChange={(e, newValue) => setViewCountFactor(newValue)} valueLabelDisplay="on" />
+            <Typography gutterBottom>Likes Factor</Typography>
+            <Slider value={likesFactor} min={0.01} max={2} step={0.01} onChange={(e, newValue) => setLikesFactor(newValue)} valueLabelDisplay="on" />
+            <Typography gutterBottom>Comment Count Factor</Typography>
+            <Slider value={commentCountFactor} min={0.01} max={2} step={0.01} onChange={(e, newValue) => setCommentCountFactor(newValue)} valueLabelDisplay="on" />
+            <Typography gutterBottom>Gauss Decay</Typography>
+            <Slider value={gaussDecay} min={0.1} max={0.8} step={0.01} onChange={(e, newValue) => setGaussDecay(newValue)} valueLabelDisplay="on" />
+            <Typography gutterBottom>Gauss Scale (days)</Typography>
+            <Slider value={gaussScale} min={1} max={720} step={1} onChange={(e, newValue) => setGaussScale(newValue)} valueLabelDisplay="on" />
+            <Typography gutterBottom>Gauss Offset (days)</Typography>
+            <Slider value={gaussOffset} min={0} max={360} step={1} onChange={(e, newValue) => setGaussOffset(newValue)} valueLabelDisplay="on"/>
             <Button fullWidth variant="outlined" onClick={search}>Search</Button>
             {isLoading ? (
               <p>유사 단어를 추출하고 있습니다...</p>
